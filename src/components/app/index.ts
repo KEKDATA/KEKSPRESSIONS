@@ -1,1 +1,1 @@
-export { AppHot as App } from './app';
+export { App } from './app';

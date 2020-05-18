@@ -1,13 +1,18 @@
 import React from 'react';
 import { MuiThemeProvider, CssBaseline } from '@material-ui/core';
 import { hot } from 'react-hot-loader/root';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { theme } from '../../ui/theme';
+import { Routes } from '../../pages/routes';
 
-function App() {
+export function App() {
   return (
-    <MuiThemeProvider theme={theme}>
-      <CssBaseline />
-    </MuiThemeProvider>
+    <Router>
+      <MuiThemeProvider theme={theme}>
+        <CssBaseline />
+        <Routes />
+      </MuiThemeProvider>
+    </Router>
   );
 }
 

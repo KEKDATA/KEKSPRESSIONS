@@ -15,6 +15,7 @@ module.exports = {
   entry: {
     main: './index.tsx',
   },
+  devtool: 'eval-source-map',
   devServer: {
     historyApiFallback: {
       disableDotRule: true,
@@ -23,6 +24,11 @@ module.exports = {
     progress: true,
     hot: true,
     open: true,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
+    },
   },
   optimization: {
     moduleIds: 'hashed',
