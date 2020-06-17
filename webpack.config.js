@@ -20,7 +20,6 @@ module.exports = {
     historyApiFallback: {
       disableDotRule: true,
     },
-    port: 3000,
     progress: true,
     hot: true,
     open: true,
@@ -47,7 +46,7 @@ module.exports = {
         },
       },
       {
-        test: /\.(png|jpe?g|gif|csv)$/i,
+        test: /\.(png|jpe?g|gif|csv|onnx)$/i,
         use: [
           {
             loader: 'file-loader',

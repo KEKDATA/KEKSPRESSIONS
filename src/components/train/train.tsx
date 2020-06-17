@@ -1,14 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Tabs, Tab, Box } from '@material-ui/core';
 import * as tfvis from '@tensorflow/tfjs-vis';
-import * as tf from '@tensorflow/tfjs';
+import { useStore } from 'effector-react';
 import { loadData } from '../../utils/load-data';
 // @ts-ignore
-import trainData from '../../../data/train.csv';
+import trainData from '../../../data/fer2013.csv';
 import { Unwrap } from '../../utils/unwrap';
-import { buildModel, compileModel } from '../../utils/build-model';
+import { compileModel } from '../../utils/build-model';
+import { $model } from '../../effector/model/store';
 
 const modelURL = 'localstorage://kekspressions';
+const indexeddb = 'indexeddb://';
 
 type TabPanelProps = {
   index: number;
@@ -19,7 +21,7 @@ type TabPanelProps = {
 function TabPanel({ index, currentIndex, children, className }: TabPanelProps) {
   return (
     // @ts-ignore
-    <Box className={className} pt={3} style={{ display: index !== currentIndex && 'none' }}>
+    <Box className={className} py={3} style={{ display: index !== currentIndex && 'none' }}>
       {children}
     </Box>
   );
@@ -30,38 +32,48 @@ export function Train() {
   const trainInfoContainerRef = useRef<HTMLDivElement>(null!);
   const [tab, setTab] = useState(0);
 
+  const net = useStore($model);
+
   useEffect(() => {
-    let model: tf.LayersModel;
+    tfvis.show.modelSummary(summaryContainerRef.current, net);
+  }, [net]);
+
+  useEffect(() => {
     let data: Unwrap<ReturnType<typeof loadData>>;
 
-    async function train(useLastModel = false, epochs = 5, batchSize = 64) {
-      [model, data] = await Promise.all([
-        useLastModel ? tf.loadLayersModel(modelURL) : buildModel(),
-        loadData(trainData),
-      ]);
+    async function train(useLastModel = false, epochs = 5, batchSize = 32) {
+      [data] = await Promise.all([loadData(trainData)]);
 
       if (useLastModel) {
-        compileModel(model);
+        console.log('compile');
+        compileModel(net);
       }
 
-      await tfvis.show.modelSummary(summaryContainerRef.current, model);
+      await tfvis.show.modelSummary(summaryContainerRef.current, net);
 
-      await model.fitDataset(data.batch(batchSize), {
-        epochs,
-        callbacks: await tfvis.show.fitCallbacks(trainInfoContainerRef.current, ['loss', 'acc'], {
+      const { onEpochEnd, onBatchEnd } = tfvis.show.fitCallbacks(
+        trainInfoContainerRef.current,
+        ['loss', 'acc'],
+        {
           width: trainInfoContainerRef.current.clientWidth - 20,
-        }),
+        },
+      );
+
+      await net.fitDataset(data.take(32).batch(batchSize), {
+        epochs,
+        callbacks: {
+          onBatchEnd,
+          onEpochEnd: async (epoch, logs) => {
+            await net!.save(`${indexeddb}${net!.name}_${epoch}`);
+            await onEpochEnd(epoch, logs!);
+          },
+        },
       });
-      await model.save(modelURL);
-      await model.save('downloads://kekspressions');
-      model.dispose();
+      await net.save(modelURL);
     }
-
-    train(true);
-
-    return () => {
-      model.dispose();
-    };
+    if (net) {
+      // train(true);
+    }
   }, []);
 
   return (

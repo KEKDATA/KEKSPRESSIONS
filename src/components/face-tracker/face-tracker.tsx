@@ -6,19 +6,19 @@ import { Grid } from '@material-ui/core';
 import { Unwrap } from '../../utils/unwrap';
 
 type WebcamIterator = Unwrap<ReturnType<typeof tf.data.webcam>>;
-type Net = Unwrap<ReturnType<typeof blazeface.load>>;
+type FaceNet = blazeface.BlazeFaceModel;
 
 export function FaceTracker() {
   const canvasRef = useRef<HTMLCanvasElement>(null!);
   const webcamRef = useRef<HTMLVideoElement>(null!);
   const webcam = useRef<WebcamIterator>();
-  const net = useRef<Net>();
+  const faceNet = useRef<FaceNet>();
   const unmountRef = useRef(false);
 
   useEffect(() => {
     async function run() {
-      if (!net.current) {
-        net.current = await blazeface.load();
+      if (!faceNet.current) {
+        faceNet.current = await blazeface.load();
       }
       if (!webcam.current) {
         webcam.current = await tf.data.webcam(webcamRef.current);
@@ -30,7 +30,7 @@ export function FaceTracker() {
       while (!unmountRef.current) {
         const img = await webcam.current.capture();
         await tf.browser.toPixels(img, canvasRef.current);
-        const predictions = await net.current.estimateFaces(img);
+        const predictions = await faceNet.current.estimateFaces(img);
         predictions.forEach(prediction => {
           const { topLeft, bottomRight } = prediction;
           const [tx, ty] = topLeft as [number, number];

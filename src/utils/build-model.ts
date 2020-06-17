@@ -9,7 +9,16 @@ const trainableLayers = [
   'conv_dw_13_bn',
   'conv _dw_13',
 ];
-const metrics = ['accuracy'];
+const metrics = [
+  'accuracy',
+  (l: tf.Tensor, r: tf.Tensor) => {
+    console.log('left');
+    l.print();
+    console.log('right');
+    r.print();
+    return l;
+  },
+];
 const loss = 'categoricalCrossentropy';
 const optimizer = tf.train.adam(1e-3);
 

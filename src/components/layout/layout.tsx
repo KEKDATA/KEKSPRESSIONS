@@ -73,9 +73,9 @@ export function Layout({ children }: LayoutProps) {
       <Divider />
       <List>
         {[
-          { text: 'Общая информация', link: '/' },
+          { text: 'Выбор модели', link: '/' },
           { text: 'Обучение', link: '/train' },
-          { text: 'Проверка', link: '/test' },
+          { text: 'Распознавание', link: '/recognition' },
         ].map(({ text, link }) => (
           <ListItem exact className={classes.link} button key={text} component={NavLink} to={link}>
             <ListItemText primary={text} />

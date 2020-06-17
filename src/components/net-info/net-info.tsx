@@ -87,66 +87,61 @@ async function* imgStream(webcam: WebcamIterator) {
 }
 
 export function NetInfo() {
-  const videoRef = useRef<HTMLVideoElement>(null!);
-  const canvasRef = useRef<HTMLCanvasElement>(null!);
-  const [emotion, setEmotion] = useState<typeof labelMap[number] | null>(null);
-  useEffect(() => {
-    // train(true);
-    // train();
-    // test();
-    // reshape(canvasRef, imageRef);
-
-    async function run() {
-      const [model, faceNet, webcam] = await Promise.all([
-        tf.loadLayersModel(modelPath),
-        blazeface.load({ maxFaces: 1 }),
-        tf.data.webcam(videoRef.current),
-      ]);
-      // eslint-disable-next-line no-restricted-syntax
-      for await (const img of imgStream(webcam)) {
-        const [face] = await faceNet.estimateFaces(img, true);
-
-        // get prediction
-        const prediction = tf.tidy(() => {
-          const { topLeft, bottomRight } = face as {
-            topLeft: tf.Tensor1D;
-            bottomRight: tf.Tensor1D;
-          };
-          const [height, width] = img.shape;
-          const bbox = tf
-            .concat([
-              topLeft.reverse().div([height, width]), // [x, y] => [y, x] => [y / height, x / width]
-              bottomRight.reverse().div([height, width]),
-            ])
-            .expandDims() as tf.Tensor2D;
-
-          const boxInd = [0];
-          const cropSize: [number, number] = [224, 224];
-          const normalized = img.div(tf.fill(img.shape, 255)).expandDims() as tf.Tensor4D;
-          const croppedImage = tf.image.cropAndResize(normalized, bbox, boxInd, cropSize);
-          return model.predict(croppedImage) as tf.Tensor2D;
-        });
-        //
-
-        // draw image
-        await tf.browser.toPixels(img, canvasRef.current);
-        //
-
-        // extract predicted class label
-        const [label] = await prediction.squeeze().argMax().data();
-        //
-        setEmotion(labelMap[label]);
-
-        // cleanup
-        prediction.dispose();
-        img.dispose();
-        //
-
-        await tf.nextFrame();
-      }
-    }
-    run();
-  }, []);
+  // const videoRef = useRef<HTMLVideoElement>(null!);
+  // const canvasRef = useRef<HTMLCanvasElement>(null!);
+  // const [emotion, setEmotion] = useState<typeof labelMap[number] | null>(null);
+  // useEffect(() => {
+  //   async function run() {
+  //     const [model, faceNet, webcam] = await Promise.all([
+  //       tf.loadLayersModel(modelPath),
+  //       blazeface.load({ maxFaces: 1 }),
+  //       tf.data.webcam(videoRef.current),
+  //     ]);
+  //     // eslint-disable-next-line no-restricted-syntax
+  //     for await (const img of imgStream(webcam)) {
+  //       const [face] = await faceNet.estimateFaces(img, true);
+  //
+  //       // get prediction
+  //       const prediction = tf.tidy(() => {
+  //         const { topLeft, bottomRight } = face as {
+  //           topLeft: tf.Tensor1D;
+  //           bottomRight: tf.Tensor1D;
+  //         };
+  //         const [height, width] = img.shape;
+  //         const bbox = tf
+  //           .concat([
+  //             topLeft.reverse().div([height, width]), // [x, y] => [y, x] => [y / height, x / width]
+  //             bottomRight.reverse().div([height, width]),
+  //           ])
+  //           .expandDims() as tf.Tensor2D;
+  //
+  //         const boxInd = [0];
+  //         const cropSize: [number, number] = [224, 224];
+  //         const normalized = img.div(tf.fill(img.shape, 255)).expandDims() as tf.Tensor4D;
+  //         const croppedImage = tf.image.cropAndResize(normalized, bbox, boxInd, cropSize);
+  //         return model.predict(croppedImage) as tf.Tensor2D;
+  //       });
+  //       //
+  //
+  //       // draw image
+  //       await tf.browser.toPixels(img, canvasRef.current);
+  //       //
+  //
+  //       // extract predicted class label
+  //       const [label] = await prediction.squeeze().argMax().data();
+  //       //
+  //       setEmotion(labelMap[label]);
+  //
+  //       // cleanup
+  //       prediction.dispose();
+  //       img.dispose();
+  //       //
+  //
+  //       await tf.nextFrame();
+  //     }
+  //   }
+  //   run();
+  // }, []);
 
   return (
     <>

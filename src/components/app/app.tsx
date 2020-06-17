@@ -4,6 +4,7 @@ import { hot } from 'react-hot-loader/root';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { theme } from '../../ui/theme';
 import { Routes } from '../../pages/routes';
+import '../../effector/init';
 
 export function App() {
   return (

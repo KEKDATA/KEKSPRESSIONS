@@ -4,7 +4,11 @@ import * as R from 'ramda';
 const xsLens = R.lensProp('xs');
 const ysLens = R.lensProp('ys');
 
-export async function loadData(path: string) {
+const USAGES = ['Training', 'PublicTest', 'PrivateTest'] as const;
+type Usages = typeof USAGES[number];
+
+// 28709
+export async function loadData(path: string, usage: Usages = 'Training') {
   return (
     (tf.data
       .csv(path, {
@@ -14,13 +18,22 @@ export async function loadData(path: string) {
           },
         },
       })
+      .filter(x => {
+        // @ts-ignore
+        const { xs } = x;
+        return xs.Usage === usage;
+      })
       // extract values
       .map(x => {
         const { xs, ys } = (x as unknown) as {
           xs: tf.TensorContainerObject;
           ys: tf.TensorContainerObject;
         };
-        const transform = R.compose<object, any[], any>(R.head, R.values);
+        const transform = R.compose<object, object, any[], any>(
+          R.head,
+          R.values,
+          R.omit(['Usage']),
+        );
 
         return { xs: transform(xs) as string, ys: transform(ys) as number };
       })
